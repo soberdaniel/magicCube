@@ -94,6 +94,8 @@ public class MagicCube {
         return true;
     }
 
+    //发现问题，其实转法只有6种，垂直于x轴两种，中间那个面向下转可以堪称是左右两个面向上转，因为全体向上或者向下是不改变的。中间层向下+全体向上=左右向上转。同理垂直y轴两种，z轴两种。
+    //也可以按薛哥说的，6个面嘛，6中转法。我这里多写了3种，不过都是if else，你不输入那三种就行了。
     //发现问题,旋转一次不仅仅是改变x=a平面外围的那一圈,x=a平面内本身也改变了.
     //找到一个Square在x=a平面内顺时针旋转90度后的下一个位置对应的Square.从x轴正向往负向看.
     public Square xFindNext(Square square){
@@ -401,5 +403,33 @@ public class MagicCube {
             t2.color = t1.color;
             t1.color = tmp;
         }
+    }
+
+    //统计每个面上那种颜色的方块的数量最多，并把这些方块的数量加起来。
+    public int count_same_color_num(){
+        int sum = 0;
+        int surface_tag = 0;
+        int[] surface = new int[6];
+        int[] color_num = new int[7];
+        //依次统计前后左右下上
+        for(int i=0;i<this.three_class_cube.length+1;i++){
+            if(i % 9==0&&i!=0){         //问题在于i最多到53就出去了，没把最后一个面的color_num赋给suface数组,所以加个i等于54的判断和length+1;
+                int max = color_num[0];
+                for(int k=1;k<color_num.length;k++){
+                    if(color_num[k]>max)
+                        max = color_num[k];
+                }
+                surface[surface_tag]=max;
+                surface_tag++;
+                for(int j=0;j<color_num.length;j++){
+                    color_num[j]=0;
+                }
+            }
+            if(i==54)break;
+            color_num[this.three_class_cube[i].color]++;
+        }
+        for(int i=0;i<surface.length;i++)
+            sum +=surface[i];
+        return sum;
     }
 }
