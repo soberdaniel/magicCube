@@ -3,21 +3,23 @@ import java.util.Random;
 public class Test {
     public static void main(String[] args){
         MagicCube test = new MagicCube();
-//        test.showCube();
+        test.showCube();
 //        System.out.println(test.count_same_color_num());
 //        System.out.println(test.isWellDone());
 //        test.ySpin(1);
 //        test.zSpin(1);
         System.out.println(test.count_same_color_num());
 //        test.showCube();
+
         rotate_random(2,test);
+        test.showCube();
         while(!test.isWellDone()){
             int r_method = find_method(test);
             System.out.println("准备采取"+r_method+"目前状态"+test.count_same_color_num());
 //            System.out.println(test.count_same_color_num());
             rotate(r_method,test);
         }         //被骗了,玛德,转不回来.
-//        test.showCube();
+        test.showCube();
     }
 
 //    public static void rotate_random(int times,MagicCube magicCube){
