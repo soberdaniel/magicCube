@@ -196,5 +196,28 @@ public void faceNeighborRowTurnExchange(int faceNum){
         for(int i=0;i<times;i++)
             faceRotateReverse(faceNum);
     }
-    
+
+    //写一个评估函数进行评价筛选。
+    //统计混乱程度
+    public int countWrongColorNum(){
+        int[] surfaceCount = new int[6];
+        for(int i=0;i<6;i++)
+        {
+            String rightColor = this.threeClassCube[i][1][1];
+            for(int j=0;j<3;j++)
+            {
+                for(int k=0;k<3;k++)
+                {
+                    if(!this.threeClassCube[i][j][k].equals(rightColor))
+                        surfaceCount[i]++;
+                }
+            }
+        }
+        int sum=0;
+        for(int i=0;i<surfaceCount.length;i++)
+            sum +=surfaceCount[i];
+        return sum;
+    }
+
+
     }
