@@ -197,6 +197,23 @@ public void faceNeighborRowTurnExchange(int faceNum){
             faceRotateReverse(faceNum);
     }
 
+    public void faceRotateUnion(int faceNum){
+        if(faceNum<6){
+            faceRotateReverse(faceNum);
+        }
+        else{
+            faceRotate(faceNum-6);
+        }
+    }
+    public void faceRotateUnionReverse(int faceNum){
+        if(faceNum<6){
+            faceRotate(faceNum);
+        }
+        else{
+            faceRotateReverse(faceNum-6);
+        }
+    }
+
     //写一个评估函数进行评价筛选。
     //统计混乱程度
     public int countWrongColorNum(){
@@ -219,5 +236,205 @@ public void faceNeighborRowTurnExchange(int faceNum){
         return sum;
     }
 
+    //第一步先拼好底面四个角块
+    public int firstTargetDistance(){
+        int[] surfaceCount = new int[6];
+        for(int i=0;i<6;i++)
+        {
+            String rightColor = this.threeClassCube[i][1][1];
+            if(i==0){
+                if(!this.threeClassCube[i][2][0].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][2][2].equals(rightColor))
+                    surfaceCount[i]++;
+            }
+            if(i==2){
+                if(!this.threeClassCube[i][0][2].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][2][2].equals(rightColor))
+                    surfaceCount[i]++;
+            }
+            if(i==5){
+                if(!this.threeClassCube[i][2][0].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][2][2].equals(rightColor))
+                    surfaceCount[i]++;
+            }
+            if(i==4){
+                if(!this.threeClassCube[i][0][0].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][2][0].equals(rightColor))
+                    surfaceCount[i]++;
+            }
+            if(i==3){
+                if(!this.threeClassCube[i][0][0].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][0][2].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][2][0].equals(rightColor))
+                    surfaceCount[i]++;
+                if(!this.threeClassCube[i][2][2].equals(rightColor))
+                    surfaceCount[i]++;
+            }
+        }
+        int sum=0;
+        for(int i=0;i<surfaceCount.length;i++)
+            sum +=surfaceCount[i];
+        return sum;
+    }
+
+    //第二步拼好底面一层。
+    public int secondTargetDistance(){
+        int[] surfaceCount = new int[6];
+        for(int i=0;i<6;i++)
+        {
+            String rightColor = this.threeClassCube[i][1][1];
+            if(i==0||i==5){
+                for(int j=2;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=2;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+            else if(i==3){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<1;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+        }
+        int sum=0;
+        for(int i=0;i<surfaceCount.length;i++)
+            sum +=surfaceCount[i];
+        return sum;
+    }
+
+    //第三步拼好第二层。
+    public int thirdTargetDistance(){
+        int[] surfaceCount = new int[6];
+        for(int i=0;i<6;i++)
+        {
+            String rightColor = this.threeClassCube[i][1][1];
+            if(i==0||i==5){
+                for(int j=1;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=1;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+            else if(i==3){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<2;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            surfaceCount[i]++;
+                    }
+                }
+            }
+        }
+        int sum=0;
+        for(int i=0;i<surfaceCount.length;i++)
+            sum +=surfaceCount[i];
+        return sum;
+    }
+
+    int distanceOfTarget2(MagicCube targetCube){
+        int distance = 0;
+        for(int i=0;i<6;i++)
+        {
+            if(i==0||i==5){
+                for(int j=1;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=1;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==3){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<2;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+        }
+        return distance;
+    }
 
     }

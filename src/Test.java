@@ -2,29 +2,107 @@ import java.io.IOException;
 import java.util.*;
 
 public class Test {
-    public static void main(String[] args) throws IOException {
+    public static MagicCube targetCube;
+    public static List<Thread> threadArray = new ArrayList<>();
+    public static void main(String[] args) throws IOException, InterruptedException {
 //        MagicCube cube = new MagicCube();
-        MagicCube cube = new MagicCube("./data.txt");
+        MagicCube cube = new MagicCube();
+//        cube.showCube();
+//        System.out.println(cube.secondTargetDistance());
         mixUp(cube,100);
-        cube.faceRotate(2);
-        cube.faceRotate(5);
-        cube.faceRotate(1);
-        cube.faceRotate(0);
-        cube.faceRotate(2);
-        cube.faceRotate(2);
-        cube.faceRotate(3);
+//        cube.faceRotate(1);
+//        cube.faceRotateUnion(2);
+//        cube.faceRotateUnion(3);
 //        cube.showCube();
 //        RlFFLrdRlFLr
-//        rDRFDf开始想着用交换子来做，算了，还是回归到机器学习。
+//        rDRFDf开始想着用交换子来做，算了，还是回归到搜索算法。
 
         //建立一个集合，元素是选中的继承人节点。
-        List<MagicCube> cubeRoadToSuccess = new ArrayList<>();
-        cubeRoadToSuccess.add(cube);    //初始节点
-//        List<Integer> bestIndex = BFS(cubeRoadToSuccess.get(i),cubeRoadToSuccess);
-        for(int j=0;j<5;j++){
-            int bestIndex = BFS(cubeRoadToSuccess.get(j),cubeRoadToSuccess);
-            resolveIndex(bestIndex,12);  //打印出从输入节点到继承人节点的路径
+//        List<MagicCube> cubeRoadToSuccess = new ArrayList<>();
+//        cubeRoadToSuccess.add(cube);    //初始节点
+
+        Stack<Integer> rotateMethod = new Stack<>();
+        for(int target=4;target>=2;target--,target--){
+            DFS(target,cube,0,rotateMethod);
         }
+        for(int target=2;target>=0;target--){
+            DFS(target,cube,0,rotateMethod);
+        }
+        //到这一行应该拼好四个角块
+        for(int target=6;target>=2;target--,target--){
+            DFS1(target,cube,0,rotateMethod);
+        }
+        for(int target=2;target>=0;target--){
+            DFS1(target,cube,0,rotateMethod);
+        }
+        cube.showCube();
+        //拼好底面一层
+        for(int target=6;target>=2;target--,target--){
+            DFS2(target,cube,0,rotateMethod);
+        }
+        for(int target=2;target>=0;target--){
+            DFS2(target,cube,0,rotateMethod);
+        }
+        cube.showCube();
+        //拼好两层
+        int stackSize = rotateMethod.size();
+        for(int n=0;n<stackSize;n++){
+            int method = rotateMethod.pop();
+            System.out.print(method+",");
+        }
+        System.out.println();
+
+//        for(int j=0;j<3;j++){         //广度不太行，不够深入。。。
+//            int bestIndex = BFS(cubeRoadToSuccess.get(j),cubeRoadToSuccess);
+//            resolveIndex(bestIndex,12);  //打印出从输入节点到继承人节点的路径 //打印出来的面是序号加了1的
+//        }
+//        for(int j=3;j<9;j++){         //广度不太行，不够深入。。。
+//            int bestIndex = BFS2(cubeRoadToSuccess.get(j),cubeRoadToSuccess);
+//            resolveIndex(bestIndex,12);  //打印出从输入节点到继承人节点的路径 //打印出来的面是序号加了1的
+//        }
+
+//        cubeRoadToSuccess.get(2).showCube();
+
+//        cubei.showCube();
+//        System.out.println(cubei.countWrongColorNum());
+
+
+//        for(int t=1;t<=2;t++){
+//            Stack<Integer> rotateMethod = new Stack<>();
+//            rotateMethod.push(-11);
+//            rotateMethod.push(-11);
+//            DFS(8-4*t,cubeRoadToSuccess.get(0),0,rotateMethod);
+//            int stackSize = rotateMethod.size();
+//            for(int n=0;n<stackSize;n++){
+//                int method = rotateMethod.pop();
+//                System.out.print(method+",");
+//            }
+//            System.out.println();
+//        }
+
+
+        //多线程的话试一下
+//        for(int x=0;x<12;x++)
+//        for(int y=0;y<12;y++){
+//            if((y!=(x+6))&&(y!=(x-6))){
+//                Stack<Integer> rotateMethod = new Stack<>();
+//                MagicCube tmp = new MagicCube(cube);
+//                tmp.faceRotateUnion(x);
+//                tmp.faceRotateUnion(y);
+//                rotateMethod.push(x);
+//                rotateMethod.push(y);
+//                MultiThread r = new MultiThread(1,tmp,rotateMethod);
+//                Thread t = new Thread(r);
+//                threadArray.add(t);
+//                t.start();
+//            }
+//        }
+
+//        for(int xx=0;xx<threadArray.size();xx++){
+//            threadArray.get(xx).join();
+//        }
+
+
 //        cubeRoadToSuccess.get(2).showCube();
 //        BFS2(cubeRoadToSuccess);
 //        cubeRoadToSuccess.get(3).showCube();
@@ -98,81 +176,191 @@ public class Test {
         while(true){
 //            if(cubeList.get(0).isWellDone())  break;
             queueHead = cubeList.element();
-            if(bestCube.countWrongColorNum()>queueHead.countWrongColorNum()){
+            if(bestCube.firstTargetDistance()>queueHead.firstTargetDistance()){
                 bestIndex = index;
-                bestCube = cubeList.element();
+                bestCube = queueHead;
             }
-            if(bestCube.isWellDone())
+            if(bestCube.firstTargetDistance()==0)
             {
 //                flag = 1;
                 System.out.println("success");
                 break;
             }
-            if(index<271453){    //9331是第七层的初始索引
+            if(index<271453){
                 for(int i=0;i<12;i++){
                     cube = new MagicCube(queueHead);
-                    if(i<6)
-                    cube.faceRotateReverse(i);  //先逆
-                    else
-                        cube.faceRotate(i-6);   //后顺
+//                    if(i<6)
+//                    cube.faceRotateReverse(i);  //先逆
+//                    else
+//                        cube.faceRotate(i-6);   //后顺
+                    cube.faceRotateUnion(i);
                     cubeList.offer(cube);
                 }
             }
             cubeList.poll();
             index++;
-            if(index>=3257437)   //55987是第八层的初始index
+            if(index>=3257437)   //只转了6下。
                 break;
         }
 
         System.out.println("选中的继承人的索引为："+bestIndex);
-        System.out.println("继承人的混乱程度为："+bestCube.countWrongColorNum());
+        System.out.println("继承人的混乱程度为："+bestCube.firstTargetDistance());
 //        cubeList.get(bestIndex).showCube();
 //        cubeList.get(index).showCube();
         cubeRoadToSuccess.add(bestCube); //将继承人结点加入到寻找解法路径的列表中去
         return bestIndex;
     }
 
-    public static int BFS2(List<MagicCube> cubeRoadToSuccess){
-        Queue<MagicCube> cubeList = new LinkedList<>();
-        cubeList.offer(cubeRoadToSuccess.get(2));
-        MagicCube bestCube = cubeList.element();
-        MagicCube queueHead = bestCube;
-        int bestCubeWN = bestCube.countWrongColorNum();
-        int queueHeadWN;
-        int num=0;
-//        int flag = 0;
-        while(true){
-            queueHeadWN = queueHead.countWrongColorNum();
-            if(bestCubeWN>queueHeadWN){
-                bestCube = queueHead;
-                bestCubeWN = queueHeadWN;
+
+    public static int DFS(int target,MagicCube cube,int depth,Stack<Integer> rotateMethod){
+//        Queue<MagicCube> cubeList = new LinkedList<>();
+//        cubeList.offer(cubeRoadToSuccess.get(6));
+        int nowWN = cube.firstTargetDistance();
+        depth++;
+        if(nowWN <= target)
+        {
+            System.out.println("距离为："+nowWN);
+            return 1;
+        }
+        else if(depth>=9)
+            return 0;
+        int preMethod;
+        if(rotateMethod.empty()){
+         preMethod = -11;
+        }else{
+            preMethod = rotateMethod.peek();
+        }
+        int secondMT;
+        if(rotateMethod.size()<2){
+            secondMT = -11;
+        }else{
+            secondMT = rotateMethod.get(rotateMethod.size()-2);
+        }
+        for(int m=0;m<12;m++){
+            if((m!=(preMethod+6))&&(m!=(preMethod-6))&&(!((m==secondMT)&&(m==preMethod)))){
+                rotateMethod.push(m);
+                cube.faceRotateUnion(m);
+                if(DFS(target,cube,depth,rotateMethod)==1)
+                    return 1;
+                cube.faceRotateUnionReverse(m);
+                rotateMethod.pop();
             }
-            if(bestCube.isWellDone())
-            {
-//                flag = 1;
-                System.out.println("success");
-                break;
+        }
+        return 0;
+    }
+
+    public static int DFS1(int target,MagicCube cube,int depth,Stack<Integer> rotateMethod){
+//        Queue<MagicCube> cubeList = new LinkedList<>();
+//        cubeList.offer(cubeRoadToSuccess.get(6));
+        int nowWN = cube.secondTargetDistance();
+        depth++;
+        if(nowWN <= target)
+        {
+            System.out.println("距离为："+nowWN);
+            return 1;
+        }
+        else if(depth>=9)
+            return 0;
+        int preMethod;
+        if(rotateMethod.empty()){
+            preMethod = -11;
+        }else{
+            preMethod = rotateMethod.peek();
+        }
+        int secondMT;
+        if(rotateMethod.size()<2){
+            secondMT = -11;
+        }else{
+            secondMT = rotateMethod.get(rotateMethod.size()-2);
+        }
+        for(int m=0;m<12;m++){
+            if((m!=(preMethod+6))&&(m!=(preMethod-6))&&(!((m==secondMT)&&(m==preMethod)))){
+                rotateMethod.push(m);
+                cube.faceRotateUnion(m);
+                if(DFS1(target,cube,depth,rotateMethod)==1) //玛德。。。这里原来写的是DFS，我说怎么好奇怪。怎么一下子就算出来了。。。而且打印的cube明显不对。
+                    return 1;
+                cube.faceRotateUnionReverse(m);
+                rotateMethod.pop();
             }
-            if((queueHeadWN<bestCubeWN+20)&&num<240000){
-                for(int i=0;i<12;i++){
-                    MagicCube cube = new MagicCube(queueHead);
-                    if(i<6)
-                        cube.faceRotateReverse(i);  //先逆
-                    else
-                        cube.faceRotate(i-6);   //后顺
-                    cubeList.offer(cube);
+        }
+        return 0;
+    }
+
+    public static int DFS2(int target,MagicCube cube,int depth,Stack<Integer> rotateMethod){
+        int nowWN = cube.thirdTargetDistance();
+        depth++;
+        if(nowWN <= target)
+        {
+            System.out.println("距离为："+nowWN);
+            return 1;
+        }
+        else if(depth>=9)
+            return 0;
+        int preMethod;
+        if(rotateMethod.empty()){
+            preMethod = -11;
+        }else{
+            preMethod = rotateMethod.peek();
+        }
+        int secondMT;
+        if(rotateMethod.size()<2){
+            secondMT = -11;
+        }else{
+            secondMT = rotateMethod.get(rotateMethod.size()-2);
+        }
+        for(int m=0;m<12;m++){
+            if((m!=(preMethod+6))&&(m!=(preMethod-6))&&(!((m==secondMT)&&(m==preMethod)))){
+                rotateMethod.push(m);
+                cube.faceRotateUnion(m);
+                if(DFS2(target,cube,depth,rotateMethod)==1)
+                    return 1;
+                cube.faceRotateUnionReverse(m);
+                rotateMethod.pop();
+            }
+        }
+        return 0;
+    }
+
+    //拼第三层顶面
+    public static int DFS3_1(int target,MagicCube cube,int depth,Stack<Integer> rotateMethod){
+        int nowWN = cube.thirdTargetDistance(); //这里改一下
+        int nowWWN = cube.countWrongColorNum();
+        depth++;
+        if(nowWN <= target)
+        {
+            System.out.println("距离为："+nowWN);
+            return 1;
+        }
+        else if(depth>=9)
+            return 0;
+        int preMethod;
+        if(rotateMethod.empty()){
+            preMethod = -11;
+        }else{
+            preMethod = rotateMethod.peek();
+        }
+        int secondMT;
+        if(rotateMethod.size()<2){
+            secondMT = -11;
+        }else{
+            secondMT = rotateMethod.get(rotateMethod.size()-2);
+        }
+        for(int m=0;m<12;m++){
+            if((m!=(preMethod+6))&&(m!=(preMethod-6))&&(!((m==secondMT)&&(m==preMethod)))){
+                rotateMethod.push(m);
+                cube.faceRotateUnion(m);
+                if((depth>=7)&&(cube.countWrongColorNum()>=nowWWN)){
+                    rotateMethod.pop();
+                    cube.faceRotateUnionReverse(m);
+                }else{
+                    if(DFS3_1(target,cube,depth,rotateMethod)==1)
+                        return 1;
+                    cube.faceRotateUnionReverse(m);
+                    rotateMethod.pop();
                 }
             }
-            cubeList.poll();
-            num++;
-            if(num>=2425743)   //55987是第八层的初始index
-                break;
         }
-        System.out.println("继承人的混乱程度为："+bestCubeWN);
-//        cubeList.get(bestIndex).showCube();
-//        cubeList.get(index).showCube();
-        cubeRoadToSuccess.add(bestCube); //将继承人结点加入到寻找解法路径的列表中去
-        return num;
+        return 0;
     }
 
 
@@ -208,4 +396,35 @@ public class Test {
         else return num;
     }
 
+}
+
+class MultiThread implements Runnable{
+    MagicCube cube;
+    int target;
+    Stack<Integer> rotateMethod;
+    MultiThread(int target,MagicCube cube,Stack<Integer> rotateMethod){
+        this.target = target;
+        this.cube = cube;
+        this.rotateMethod = rotateMethod;
+    }
+    @Override
+    public void run() {
+        if(Test.DFS(target,cube,0,rotateMethod)==1){
+            int stackSize = rotateMethod.size();
+            for(int n=0;n<stackSize;n++){
+                int method = rotateMethod.pop();
+                System.out.print(method+",");
+            }
+            System.out.println();
+            synchronized (Test.targetCube){
+                Test.targetCube = this.cube;
+                int num = Test.threadArray.size();
+                for(int i=0;i<num;i++){
+                    if(Thread.currentThread()!=Test.threadArray.get(i)){
+                        Test.threadArray.get(i).stop();
+                    }
+                }
+            }
+        }
+    }
 }
