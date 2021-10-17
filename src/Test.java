@@ -1,7 +1,8 @@
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class Test {
+    public static String transfer_num_to_method="furdlbFURDLB";
     public static MagicCube targetCube;
     public static List<Thread> threadArray = new ArrayList<>();
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -14,8 +15,6 @@ public class Test {
 //        cube.faceRotateUnion(2);
 //        cube.faceRotateUnion(3);
 //        cube.showCube();
-//        RlFFLrdRlFLr
-//        rDRFDf开始想着用交换子来做，算了，还是回归到搜索算法。
 
         //建立一个集合，元素是选中的继承人节点。
 //        List<MagicCube> cubeRoadToSuccess = new ArrayList<>();
@@ -28,29 +27,57 @@ public class Test {
         for(int target=2;target>=0;target--){
             DFS(target,cube,0,rotateMethod);
         }
+        System.out.println("已拼好四个角块");
         //到这一行应该拼好四个角块
+
         for(int target=6;target>=2;target--,target--){
             DFS1(target,cube,0,rotateMethod);
         }
         for(int target=2;target>=0;target--){
             DFS1(target,cube,0,rotateMethod);
         }
+        System.out.println("已拼好底面一层，打印cube如下所示");
         cube.showCube();
-        //拼好底面一层
-        for(int target=6;target>=2;target--,target--){
-            DFS2(target,cube,0,rotateMethod);
-        }
-        for(int target=2;target>=0;target--){
-            DFS2(target,cube,0,rotateMethod);
-        }
-        cube.showCube();
-        //拼好两层
+        //到这行拼好底面一层
+
+        System.out.println("拼好第一次层的方法如下所示：");
+        //打印拼好第一层的方法，由栈pop出来，从右到左
         int stackSize = rotateMethod.size();
         for(int n=0;n<stackSize;n++){
             int method = rotateMethod.pop();
             System.out.print(method+",");
         }
         System.out.println();
+
+//        for(int target=6;target>=2;target--,target--){
+//            DFS2(target,cube,0,rotateMethod);
+//        }
+//        for(int target=2;target>=0;target--){
+//            DFS2(target,cube,0,rotateMethod);
+//        }
+//        cube.showCube();
+        solveSecondFloor("./method.txt",cube);
+        System.out.println("已拼好两层，打印cube如下所示");
+        cube.showCube();
+        //到这行拼好两层
+
+        //发现问题，不能直接先拼好棱块再拼好角块，会卡死，比如拼棱块的时候，只剩两个棱块还没拼好而且顶面都已经是蓝色，你是没办法的，你只能换两个棱块，或者翻转两个。
+        //解决办法。。。还是先拼一面。。。虽然不好解释。。。但确实是个办法，还真只能先拼好顶层一面。。。方法已经有了，把棱块角块方法一合并就行。
+        //试了几次，一定几率品不好。。。
+        solveThirdFloorUpperFace("./method3upperFace.txt",cube);
+        System.out.println("已经拼好两层和顶层的一面，打印cube如下所示");
+        cube.showCube();
+
+//        System.out.println(cube.distanceFromTargetThirdFloorEdgeBlockFinished());
+        solveThirdFloorEdge("./method3edgeInUse.txt",cube);
+        System.out.println("已拼好两层和第三层的棱块，打印cube如下所示");
+        cube.showCube();
+        //到这里应该拼好第三层的棱块
+
+        solveThirdFloorCorner("./method3cornerInUse.txt",cube);
+        System.out.println("已完全拼好，打印cube如下所示");
+        cube.showCube();
+        //到此完全拼好
 
 //        for(int j=0;j<3;j++){         //广度不太行，不够深入。。。
 //            int bestIndex = BFS(cubeRoadToSuccess.get(j),cubeRoadToSuccess);
@@ -363,68 +390,219 @@ public class Test {
         return 0;
     }
 
+    //读取方法进行转动，按照每行的方法，从左到右，转
+    public static int FindBestMethod(String path,int methodNum,MagicCube cube) throws IOException {
+        FileReader fr = new FileReader(path);
+        BufferedReader bf = new BufferedReader(fr);
 
-    public static void resolveIndex(int index,int branch){
-        Stack<Integer> st = new Stack<>();
-        int sum = index + 1;
-        int now_floor = getInteger(Math.log(sum*(branch-1)+1)/Math.log(branch));
-        int pre_floor_sum = (int)((Math.pow(branch,now_floor-1)-1)/(branch-1));
-        System.out.println("当前所在层数"+now_floor);
-//        System.out.println("前面所有层的节点总数"+pre_floor_sum);
-        int now_floor_serial_num = sum - pre_floor_sum;
-        for(int i=1;i<now_floor;i++){
-            int last_rotate_face = getFace(now_floor_serial_num%branch,branch);
-            now_floor_serial_num = getInteger(now_floor_serial_num/(double)branch);
-            st.push(last_rotate_face);
-//            System.out.print(last_rotate_face+",");
-        }
-        while(!st.empty()){
-            System.out.print("面"+st.pop()+",");
-        }
-        System.out.println();
-    }
-
-
-
-    public static int getInteger(double num){
-        int a = (int)num;
-        if(Math.abs(num-a)<1e-6) return a;
-        else return a+1;
-    }
-    public static int getFace(int num,int branch){
-        if(num == 0) return branch;//这个应该返回branch
-        else return num;
-    }
-
-}
-
-class MultiThread implements Runnable{
-    MagicCube cube;
-    int target;
-    Stack<Integer> rotateMethod;
-    MultiThread(int target,MagicCube cube,Stack<Integer> rotateMethod){
-        this.target = target;
-        this.cube = cube;
-        this.rotateMethod = rotateMethod;
-    }
-    @Override
-    public void run() {
-        if(Test.DFS(target,cube,0,rotateMethod)==1){
-            int stackSize = rotateMethod.size();
-            for(int n=0;n<stackSize;n++){
-                int method = rotateMethod.pop();
-                System.out.print(method+",");
+        int bestIndex = 0;
+        int index = 0;
+        int[] result = new int[methodNum];
+        while(true){
+            String tmp1 = bf.readLine();
+            if(tmp1==null)break;
+            List<Integer> rotateMethod = new ArrayList<>();
+            String[] tmp2 = tmp1.split(",");
+            //将读取到的一行方法，从字符串数组形式转化成int形式
+            for(int i=0;i<tmp2.length;i++){
+                rotateMethod.add(Integer.parseInt(tmp2[i]));
             }
-            System.out.println();
-            synchronized (Test.targetCube){
-                Test.targetCube = this.cube;
-                int num = Test.threadArray.size();
-                for(int i=0;i<num;i++){
-                    if(Thread.currentThread()!=Test.threadArray.get(i)){
-                        Test.threadArray.get(i).stop();
-                    }
+            MagicCube temp = new MagicCube(cube);
+            for(int i=0;i<rotateMethod.size();i++){
+                temp.faceRotateUnion(rotateMethod.get(i));
+            }
+            result[index] = temp.thirdTargetDistance();
+            index++;
+        }
+        for(int i=0;i<result.length;i++){
+            if(result[i]<result[bestIndex]){
+                bestIndex = i;
+            }
+        }
+        bf.close();
+        return bestIndex;
+    }
+
+    //java中就没有把函数名作为参数传递的办法吗，这代码重复率太高了。。。
+    public static int FindBestMethod_3edge(String path,int methodNum,MagicCube cube) throws IOException {
+        FileReader fr = new FileReader(path);
+        BufferedReader bf = new BufferedReader(fr);
+
+        int bestIndex = 0;
+        int index = 0;
+        int[] result = new int[methodNum];
+        while(true){
+            String tmp1 = bf.readLine();
+            if(tmp1==null)break;
+            List<Integer> rotateMethod = new ArrayList<>();
+            String[] tmp2 = tmp1.split(",");
+            //将读取到的一行方法，从字符串数组形式转化成int形式
+            for(int i=0;i<tmp2.length;i++){
+                rotateMethod.add(Integer.parseInt(tmp2[i]));
+            }
+            MagicCube temp = new MagicCube(cube);
+            for(int i=0;i<rotateMethod.size();i++){
+                temp.faceRotateUnion(rotateMethod.get(i));
+            }
+            result[index] = temp.distanceFromTargetThirdFloorEdgeBlockFinished();
+            index++;
+        }
+        for(int i=0;i<result.length;i++){
+            if(result[i]<result[bestIndex]){
+                bestIndex = i;
+            }
+        }
+        bf.close();
+        return bestIndex;
+    }
+
+    public static int FindBestMethod_3corner(String path,int methodNum,MagicCube cube) throws IOException {
+        FileReader fr = new FileReader(path);
+        BufferedReader bf = new BufferedReader(fr);
+
+        int bestIndex = 0;
+        int index = 0;
+        int[] result = new int[methodNum];
+        while(true){
+            String tmp1 = bf.readLine();
+            if(tmp1==null)break;
+            List<Integer> rotateMethod = new ArrayList<>();
+            String[] tmp2 = tmp1.split(",");
+            //将读取到的一行方法，从字符串数组形式转化成int形式
+            for(int i=0;i<tmp2.length;i++){
+                rotateMethod.add(Integer.parseInt(tmp2[i]));
+            }
+            MagicCube temp = new MagicCube(cube);
+            for(int i=0;i<rotateMethod.size();i++){
+                temp.faceRotateUnion(rotateMethod.get(i));
+            }
+            result[index] = temp.countWrongColorNum();
+            index++;
+        }
+        for(int i=0;i<result.length;i++){
+            if(result[i]<result[bestIndex]){
+                bestIndex = i;
+            }
+        }
+        bf.close();
+        return bestIndex;
+    }
+
+    public static int FindBestMethod_3UpperFace(String path,int methodNum,MagicCube cube) throws IOException {
+        FileReader fr = new FileReader(path);
+        BufferedReader bf = new BufferedReader(fr);
+
+        int bestIndex = 0;
+        int index = 0;
+        int[] result = new int[methodNum];
+        while(true){
+            String tmp1 = bf.readLine();
+            if(tmp1==null)break;
+            List<Integer> rotateMethod = new ArrayList<>();
+            String[] tmp2 = tmp1.split(",");
+            //将读取到的一行方法，从字符串数组形式转化成int形式
+            for(int i=0;i<tmp2.length;i++){
+                rotateMethod.add(Integer.parseInt(tmp2[i]));
+            }
+            MagicCube temp = new MagicCube(cube);
+            for(int i=0;i<rotateMethod.size();i++){
+                temp.faceRotateUnion(rotateMethod.get(i));
+            }
+            result[index] = temp.distanceFromTargetThirdFloorUpperFace();
+            index++;
+        }
+        for(int i=0;i<result.length;i++){
+            if(result[i]<result[bestIndex]){
+                bestIndex = i;
+            }
+        }
+        bf.close();
+        return bestIndex;
+    }
+
+    public static void rotateWithBestMethod(String path,int bestIndex,MagicCube cube) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(path));
+        int index=0;
+        while(true){
+            String tmp1 = br.readLine();
+            if(tmp1==null)break;
+            if(index<bestIndex){
+                index++;
+                continue;
+            }
+            else{
+                List<Integer> rotateMethod = new ArrayList<>();
+                String[] tmp2 = tmp1.split(",");
+                //将读取到的一行方法，从字符串数组形式转化成int形式
+                for(int i=0;i<tmp2.length;i++){
+                    rotateMethod.add(Integer.parseInt(tmp2[i]));
                 }
+                for(int i=0;i<rotateMethod.size();i++){
+                    cube.faceRotateUnion(rotateMethod.get(i));
+                }
+                break;
+            }
+        }
+    }
+
+    public static void solveSecondFloor(String path,MagicCube cube) throws IOException {
+        int initDistance = cube.thirdTargetDistance();
+        int nowDistance = initDistance;
+        while(nowDistance!=0){
+            int bestIndex = FindBestMethod(path,32,cube);
+            System.out.println("采用索引"+bestIndex+"的方法");
+            rotateWithBestMethod(path,bestIndex,cube);
+            nowDistance = cube.thirdTargetDistance();
+        }
+    }
+
+    public static void solveThirdFloorEdge(String path,MagicCube cube) throws IOException {
+        int initDistance = cube.distanceFromTargetThirdFloorEdgeBlockFinished();
+        int nowDistance = initDistance;
+        int xxx=0;
+        while(nowDistance!=0){
+            int bestIndex = FindBestMethod_3edge(path,48,cube);
+            System.out.println("采用索引"+bestIndex+"的方法");
+            rotateWithBestMethod(path,bestIndex,cube);
+            nowDistance = cube.distanceFromTargetThirdFloorEdgeBlockFinished();
+//            System.out.println(nowDistance);
+//            cube.showCube();
+            xxx++;
+            if(xxx>10){break;}
+        }
+    }
+
+    public static void solveThirdFloorCorner(String path,MagicCube cube) throws IOException {
+        int initDistance = cube.countWrongColorNum();
+        int nowDistance = initDistance;
+        int xxx = 0;
+        while(nowDistance!=0){
+            int bestIndex = FindBestMethod_3corner(path,42,cube);
+            System.out.println("采用索引"+bestIndex+"的方法");
+            rotateWithBestMethod(path,bestIndex,cube);
+            nowDistance = cube.countWrongColorNum();
+            xxx++;
+            if(xxx>10){
+                break;
+            }
+        }
+    }
+
+    public static void solveThirdFloorUpperFace(String path,MagicCube cube) throws IOException {
+        int initDistance = cube.distanceFromTargetThirdFloorUpperFace();
+        int nowDistance = initDistance;
+        int xxx=0;
+        while(nowDistance!=0){
+            int bestIndex = FindBestMethod_3corner(path,90,cube);
+            System.out.println("采用索引"+bestIndex+"的方法");
+            rotateWithBestMethod(path,bestIndex,cube);
+            nowDistance = cube.distanceFromTargetThirdFloorUpperFace();
+            xxx++;
+            if(xxx>10){
+                System.out.println("拼不好了，方法找的还不够多，还需要把一个棱块翻转和一个角块反转的方法找出来。。。");
+                break;
             }
         }
     }
 }
+

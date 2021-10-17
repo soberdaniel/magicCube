@@ -389,7 +389,71 @@ public void faceNeighborRowTurnExchange(int faceNum){
         return sum;
     }
 
-    int distanceOfTarget2(MagicCube targetCube){
+    //根据索引，以字符串数组形式返回对应棱块的颜色，1号面为黄色，正对着自己，取2号面左边的一个小蓝块为一号位，顺时针1234。竖着的棱，也是取背面左边的楞为5，顺时针5678.
+    //1234取蓝色面的颜色为数组第一位，5678按顺时针方向取。
+    public int[] getEdgeBlock(int index){
+        String[] tmp = new String[2];
+        //是不是返回位置更好一点
+        int[] position=null;
+        switch (index){
+            case 1:tmp[0] = this.threeClassCube[1][1][0];
+                    tmp[1] = this.threeClassCube[4][1][2];
+                    position = new int[]{1,1,0,4,1,2};
+                    break;
+            case 2:tmp[0] = this.threeClassCube[1][0][1];
+                    tmp[1] = this.threeClassCube[5][0][1];
+                    position = new int[]{1,0,1,5,0,1};
+                    break;
+            case 3:tmp[0] = this.threeClassCube[1][1][2];
+                tmp[1] = this.threeClassCube[2][1][0];
+                position = new int[]{1,1,2,2,1,0};
+                break;
+            case 4:tmp[0] = this.threeClassCube[1][2][1];
+                tmp[1] = this.threeClassCube[0][0][1];
+                position = new int[]{1,2,1,0,0,1};
+                break;
+            case 5:tmp[0] = this.threeClassCube[4][0][1];
+                tmp[1] = this.threeClassCube[5][1][2];
+                position = new int[]{4,0,1,5,1,2};
+                break;
+            case 6:tmp[0] = this.threeClassCube[5][1][0];
+                tmp[1] = this.threeClassCube[2][0][1];
+                position = new int[]{5,1,0,2,0,1};
+                break;
+            case 7:tmp[0] = this.threeClassCube[2][2][1];
+                tmp[1] = this.threeClassCube[0][1][2];
+                position = new int[]{2,2,1,0,1,2};
+                break;
+            case 8:tmp[0] = this.threeClassCube[0][1][0];
+                tmp[1] = this.threeClassCube[4][2][1];
+                position = new int[]{0,1,0,4,2,1};
+                break;
+        }
+        return position;
+    }
+
+    //找到角块的函数，为拼第三层角块服务，只找4个，顺时针，蓝色面，1234，每个角块三个面，以蓝色面为一号面，剩下两个面按顺时针走。
+    public int[] getCornerBlock(int index){
+        int[] position=null;
+        switch (index){
+            case 1:
+                position = new int[]{1,0,0,4,0,2,5,0,2};
+                break;
+            case 2:
+                position = new int[]{1,0,2,5,0,0,2,0,0};
+                break;
+            case 3:
+                position = new int[]{1,2,2,2,2,0,0,0,2};
+                break;
+            case 4:
+                position = new int[]{1,2,0,0,0,0,4,2,2};
+                break;
+        }
+        return position;
+    }
+
+    //计算与目标方块之间的距离，只统计下面两层。距离采用方块颜色不一致的数目表示。
+    public int distanceFromTargetSecondFloor(MagicCube targetCube){
         int distance = 0;
         for(int i=0;i<6;i++)
         {
@@ -429,6 +493,188 @@ public void faceNeighborRowTurnExchange(int faceNum){
                     for(int k=0;k<2;k++)
                     {
                         if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+        }
+        return distance;
+    }
+
+
+    //计算与目标方块之间的距离，只统计下面两层和第三层棱块。距离采用方块颜色不一致的数目表示。
+    //需要更改，因为做不到在下面两层不变的情况下。。。
+    //变成只统计第三层。所以在角块处也能用。
+    public int distanceFromTargetThirdFloorEdgeBlock(MagicCube targetCube){
+        int distance = 0;
+        for(int i=0;i<6;i++)
+        {
+            if(i==0||i==5){
+                for(int j=0;j<1;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<1;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=2;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==1){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(targetCube.threeClassCube[i][j][k]))
+                            distance++;
+                    }
+                }
+            }
+        }
+        return distance;
+    }
+
+    //计算与目标方块之间的距离，只统计下面两层和第三层棱块。距离采用方块颜色不一致的数目表示。
+    //需要一个统计棱块是否好了的函数
+    public int distanceFromTargetThirdFloorEdgeBlockFinished(){
+        int distance = 0;
+        for(int i=0;i<6;i++)
+        {
+            String rightColor = this.threeClassCube[i][1][1];
+            if(i==0||i==5){
+                for(int j=1;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+                //棱块统计
+                if(!this.threeClassCube[i][0][1].equals(rightColor))
+                    distance++;
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=1;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+                if(!this.threeClassCube[i][1][0].equals(rightColor))
+                    distance++;
+            }
+            else if(i==3){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<2;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+                if(!this.threeClassCube[i][1][2].equals(rightColor))
+                    distance++;
+            }
+            //顶面棱块颜色
+            else if(i==1){
+                if(!this.threeClassCube[i][0][1].equals(rightColor))
+                    distance++;
+                if(!this.threeClassCube[i][1][0].equals(rightColor))
+                    distance++;
+                if(!this.threeClassCube[i][1][2].equals(rightColor))
+                    distance++;
+                if(!this.threeClassCube[i][2][1].equals(rightColor))
+                    distance++;
+            }
+        }
+        return distance;
+    }
+
+    //计算与目标方块之间的距离，只统计下面两层和第三层顶面。距离采用方块颜色不一致的数目表示。
+    public int distanceFromTargetThirdFloorUpperFace(){
+        int distance = 0;
+        for(int i=0;i<6;i++)
+        {
+            String rightColor = this.threeClassCube[i][1][1];
+            if(i==0||i==5){
+                for(int j=1;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=1;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==3){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<2;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
+                            distance++;
+                    }
+                }
+            }
+            //顶面
+            else if(i==1){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        if(!this.threeClassCube[i][j][k].equals(rightColor))
                             distance++;
                     }
                 }
