@@ -47,6 +47,64 @@ public class MagicCube {        //初始化赋值不能写[6][3][3]
                 }
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MagicCube magicCube = (MagicCube) o;
+        return Arrays.equals(threeClassCube, magicCube.threeClassCube);
+    }
+
+    @Override
+    public int hashCode(){
+        int sum = 0;
+        int weight = 1;
+        for(int i=0;i<6;i++)
+        {
+            if(i==0||i==5){
+                for(int j=0;j<1;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        sum+=threeClassCube[i][j][k].hashCode()*weight;
+                        weight++;
+                    }
+                }
+            }
+            else if(i==2){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<1;k++)
+                    {
+                        sum+=threeClassCube[i][j][k].hashCode()*weight;
+                        weight++;
+                    }
+                }
+            }
+            else if(i==4){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=2;k<3;k++)
+                    {
+                        sum+=threeClassCube[i][j][k].hashCode()*weight;
+                        weight++;
+                    }
+                }
+            }
+            else if(i==1){
+                for(int j=0;j<3;j++)
+                {
+                    for(int k=0;k<3;k++)
+                    {
+                        sum+=threeClassCube[i][j][k].hashCode()*weight;
+                        weight++;
+                    }
+                }
+            }
+        }
+        return sum;
+    }
+
     void showCube(){
         for(int i=0;i<6;i++){
             System.out.println(relativePostion[i]+(i+1)+"->数组下标"+i);
@@ -681,6 +739,27 @@ public void faceNeighborRowTurnExchange(int faceNum){
             }
         }
         return distance;
+    }
+
+    //按尹老师的方法试下构建第三层的基本方法
+    //先写一个与目标方块的距离的函数，全部统计
+    public int distanceFromTargetCube(MagicCube target){
+        int[] surfaceCount = new int[6];
+        for(int i=0;i<6;i++)
+        {
+            for(int j=0;j<3;j++)
+            {
+                for(int k=0;k<3;k++)
+                {
+                    if(!this.threeClassCube[i][j][k].equals(target.threeClassCube[i][j][k]))
+                        surfaceCount[i]++;
+                }
+            }
+        }
+        int sum=0;
+        for(int i=0;i<surfaceCount.length;i++)
+            sum +=surfaceCount[i];
+        return sum;
     }
 
     }

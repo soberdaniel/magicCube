@@ -61,23 +61,47 @@ public class Test {
         cube.showCube();
         //到这行拼好两层
 
-        //发现问题，不能直接先拼好棱块再拼好角块，会卡死，比如拼棱块的时候，只剩两个棱块还没拼好而且顶面都已经是蓝色，你是没办法的，你只能换两个棱块，或者翻转两个。
-        //解决办法。。。还是先拼一面。。。虽然不好解释。。。但确实是个办法，还真只能先拼好顶层一面。。。方法已经有了，把棱块角块方法一合并就行。
-        //试了几次，一定几率品不好。。。
-        solveThirdFloorUpperFace("./method3upperFace.txt",cube);
-        System.out.println("已经拼好两层和顶层的一面，打印cube如下所示");
-        cube.showCube();
 
-//        System.out.println(cube.distanceFromTargetThirdFloorEdgeBlockFinished());
-        solveThirdFloorEdge("./method3edgeInUse.txt",cube);
-        System.out.println("已拼好两层和第三层的棱块，打印cube如下所示");
-        cube.showCube();
-        //到这里应该拼好第三层的棱块
+//        //发现问题，不能直接先拼好棱块再拼好角块，会卡死，比如拼棱块的时候，只剩两个棱块还没拼好而且顶面都已经是蓝色，你是没办法的，你只能换两个棱块，或者翻转两个。
+//        //解决办法。。。还是先拼一面。。。虽然不好解释。。。但确实是个办法，还真只能先拼好顶层一面。。。方法已经有了，把棱块角块方法一合并就行。
+//        //试了几次，一定几率拼不好。。。
+//        solveThirdFloorUpperFace("./method3upperFace.txt",cube);
+//        System.out.println("已经拼好两层和顶层的一面，打印cube如下所示");
+//        cube.showCube();
+//
+////        System.out.println(cube.distanceFromTargetThirdFloorEdgeBlockFinished());
+//        solveThirdFloorEdge("./method3edgeInUse.txt",cube);
+//        System.out.println("已拼好两层和第三层的棱块，打印cube如下所示");
+//        cube.showCube();
+//        //到这里应该拼好第三层的棱块
+//
+//        solveThirdFloorCorner("./method3cornerInUse.txt",cube);
+//        System.out.println("已完全拼好，打印cube如下所示");
+//        cube.showCube();
+//        //到此完全拼好
 
-        solveThirdFloorCorner("./method3cornerInUse.txt",cube);
-        System.out.println("已完全拼好，打印cube如下所示");
+        //换尹老师的方法试一下
+//        solveThirdFloorYinTeacherMethod("./yinTeacherThirdFloorInUse.txt",cube);
+        Stack<Integer> rtm = new Stack<>();
+        BufferedReader br = new BufferedReader(new FileReader("./yinTeacherThirdFloorInUse.txt"));
+        String[] method_yin = new String[703];
+        int i=0;
+        while(true){
+            String tmp = br.readLine();
+            if(tmp==null)break;
+            method_yin[i] = tmp;
+            i++;
+        }
+        DFS_yin_teacher_method_three_floor(method_yin,0,cube,0,rtm);
         cube.showCube();
-        //到此完全拼好
+        //打印拼好第三层的方法，由栈pop出来，从右到左
+        int sS = rtm.size();
+        for(int n=0;n<sS;n++){
+            int method = rtm.pop();
+            System.out.print(method+",");
+        }
+        System.out.println();
+
 
 //        for(int j=0;j<3;j++){         //广度不太行，不够深入。。。
 //            int bestIndex = BFS(cubeRoadToSuccess.get(j),cubeRoadToSuccess);
@@ -545,6 +569,37 @@ public class Test {
         }
     }
 
+    public static void rotateWithMethod(String tmp1,MagicCube cube){
+                List<Integer> rotateMethod = new ArrayList<>();
+                String[] tmp2 = tmp1.split(",");
+                //将读取到的一行方法，从字符串数组形式转化成int形式
+                for(int i=0;i<tmp2.length;i++){
+                    rotateMethod.add(Integer.parseInt(tmp2[i]));
+                }
+                for(int i=0;i<rotateMethod.size();i++){
+                    cube.faceRotateUnion(rotateMethod.get(i));
+                }
+    }
+
+    public static void rotateWithMethodReverse(String tmp1,MagicCube cube){
+        List<Integer> rotateMethod = new ArrayList<>();
+        String[] tmp2 = tmp1.split(",");
+        //将读取到的一行方法，从字符串数组形式转化成int形式
+        for(int i=0;i<tmp2.length;i++){
+            rotateMethod.add(Integer.parseInt(tmp2[i]));
+        }
+        for(int i = rotateMethod.size()-1;i>=0;i--){
+//            int temp = rotateMethod.get(i);
+//            if(temp>=6){
+//                temp -= 6;
+//            }
+//            else{
+//                temp += 6;
+//            }
+            cube.faceRotateUnionReverse(rotateMethod.get(i));
+        }
+    }
+
     public static void solveSecondFloor(String path,MagicCube cube) throws IOException {
         int initDistance = cube.thirdTargetDistance();
         int nowDistance = initDistance;
@@ -603,6 +658,41 @@ public class Test {
                 break;
             }
         }
+    }
+
+    public static int DFS_yin_teacher_method_three_floor(String[] method_yin,int target,MagicCube cube,int depth,Stack<Integer> rotateMethod) throws IOException {
+//        int initDistance = cube.countWrongColorNum();
+//        int nowDistance = initDistance;
+//        int xxx = 0;
+//        while(nowDistance!=0){
+//            int bestIndex = FindBestMethod_3corner(path,703,cube);
+//            System.out.println("采用索引"+bestIndex+"的方法");
+//            rotateWithBestMethod(path,bestIndex,cube);
+//            nowDistance = cube.countWrongColorNum();
+//            xxx++;
+//            if(xxx>20){
+//                break;
+//            }
+//        }     //不行，会卡死某个循环，不是线性递增的。
+        //还是深度遍历吧
+        int nowWWN = cube.countWrongColorNum();
+        depth++;
+        if(nowWWN <= target)
+        {
+            System.out.println("距离为："+nowWWN);
+            return 1;
+        }
+        else if(depth>=4)
+            return 0;
+        for(int m=0;m<703;m++){
+                rotateMethod.push(m);
+                rotateWithMethod(method_yin[m],cube);
+                if(DFS_yin_teacher_method_three_floor(method_yin,target,cube,depth,rotateMethod)==1)
+                    return 1;
+                rotateWithMethodReverse(method_yin[m],cube);
+                rotateMethod.pop();
+        }
+        return 0;
     }
 }
 
